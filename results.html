@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>GeoMesa Concurrent Queries</title>
+<!-- 2016-10-09 Sun 14:23 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Anthony Fox" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">GeoMesa Concurrent Queries</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Setup</a>
+<ul>
+<li><a href="#sec-1-1">1.1. Imports</a></li>
+<li><a href="#sec-1-2">1.2. Functions to load result</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2. Description</a>
+<ul>
+<li><a href="#sec-2-1">2.1. Hardware</a></li>
+<li><a href="#sec-2-2">2.2. Data</a></li>
+<li><a href="#sec-2-3">2.3. Queries</a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3. Analysis</a>
+<ul>
+<li><a href="#sec-3-1">3.1. (1) All concurrency levels</a></li>
+<li><a href="#sec-3-2">3.2. 3x20 client JVMS and 1x4 client JVM</a></li>
+<li><a href="#sec-3-3">3.3. Minimizing the scan ranges</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Setup</h2>
+<div class="outline-text-2" id="text-1">
+</div><div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Imports</h3>
+<div class="outline-text-3" id="text-1-1">
+<div class="org-src-container">
+
+<pre class="src src-R">library(ggplot2)
+library(reshape2)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Functions to load result</h3>
+<div class="outline-text-3" id="text-1-2">
+<div class="org-src-container">
+
+<pre class="src src-R">load.results &lt;- function(f) {
+    data &lt;- read.csv(f,sep=",",
+                     header=F,
+                     colClasses=c("character", "numeric", "numeric"),
+                     stringsAsFactors = F)
+    colnames(data) &lt;- c("id", "elapsed", "count")
+    data$id &lt;- as.character(data$id)
+    data
+}
+
+multiplot &lt;- function(..., plotlist=NULL, file, cols=1, layout=NULL, title="") {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots &lt;- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout &lt;- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+  if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx &lt;- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+analyzerun &lt;- function(seed, t, basedir = "~/results/sunday/") {
+    v &lt;- paste('t', t, sep='')
+    f &lt;- paste(basedir, t, "/", seed, '.log.all.tsv', sep="")
+    d &lt;- load.results(f)
+    dcall &lt;- data.frame(id=d$id, t=d$elapsed, count=d$count)
+    colnames(dcall) &lt;- c("id", v, "count")
+    dcallsorted &lt;- dcall[order(dcall$count),]
+    dcallsorted$id &lt;- factor(d$count, levels = unique(dcallsorted$count))
+
+    melt(dcallsorted, id.vars=c("id"), measure.vars=c(v))
+}
+
+plotrun &lt;- function(dcmelt1) {
+    labels = unique(dcmelt1$id)
+    breaks = labels[seq(1, length(labels), by = 3)]
+
+    ggplot(dcmelt1, aes(factor(id),value,fill=variable)) +
+        geom_boxplot() +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+        scale_x_discrete(breaks = breaks) +
+        geom_smooth(aes(x = as.integer(id), y=value,color=variable),method=loess) +
+        labs(title = "Concurrency experiment", x = "Result count", y = "Time in seconds")
+
+}
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Description</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+I analyzed concurrent queries using a GeoMesa Accumulo instance with
+the following characteristics.
+</p>
+</div>
+
+<div id="outline-container-sec-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Hardware</h3>
+<div class="outline-text-3" id="text-2-1">
+<ol class="org-ol">
+<li>Tablet servers
+<ul class="org-ul">
+<li>10 r3.xlarge
+</li>
+<li>JVM heap 20GB
+</li>
+<li>Accumulo data cache 14GB
+</li>
+</ul>
+</li>
+<li>Client machines
+<ul class="org-ul">
+<li>4 m4.16xlarge
+</li>
+<li>JVM Heap 48GB
+</li>
+</ul>
+</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-sec-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Data</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Data consisted of 7 months of simulated ADS-B data.
+</p>
+<ul class="org-ul">
+<li>4.67B points
+</li>
+<li>460 total tables in z3
+</li>
+<li>46 tablets per tserver
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-2-3" class="outline-3">
+<h3 id="sec-2-3"><span class="section-number-3">2.3</span> Queries</h3>
+<div class="outline-text-3" id="text-2-3">
+<ol class="org-ol">
+<li>The query drivers were run concurrently on the client machines.
+Drivers were initialized with a seed and number of queries to run
+concurrently.  They then generated 128 random spatio-temporal
+queries of varying spatial size and temporal duration and executed
+all queries.  All experiments were repeated ten times.  Concurrency
+levels tested include 16 (4 per JVM), 32 (8 per JVM), 48 (12 per
+JVM), 64 (16 per JVM), and 80 (20 per JVM).
+</li>
+
+<li>A test was run with 3 JVMs executing 20 concurrent queries while 1
+JVM was executing 4 concurrent queries.  The intent is to see if
+there was any impact from client side thread contention.
+</li>
+
+<li>A test was run with geomesa.scan.ranges.target set to 10 (from a
+default of 2000) to evaluate the impact of number of ranges.
+</li>
+</ol>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Analysis</h2>
+<div class="outline-text-2" id="text-3">
+</div><div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> (1) All concurrency levels</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+Each plot below shows all the time in seconds for all concurrency
+levels for a given seed sorted by number of results.
+</p>
+
+
+<div class="figure">
+<p><img src="images/allconcurrencylevels.png" alt="allconcurrencylevels.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> 3x20 client JVMS and 1x4 client JVM</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+The next plot shows the results from running just one JVM with 4
+concurrent queries and 3 JVMs with 20 concurrent queries.  The plots
+are against the results for 4 client JVMs with 4 concurrent queries
+each.  The point of this plot is to reduce the impact of client side
+thread contention.  As can be seen, the 4-concurrent client with 64
+total concurrent queries performed the same as a 4-concurrent client
+with 16 total concurrent queries.
+</p>
+
+
+<div class="figure">
+<p><img src="images/4_client.png" alt="4_client.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Minimizing the scan ranges</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+This experiment involved setting geomesa.scan.ranges.target=10 which
+effectively limits the total number of scan ranges at the cost of more
+false positives to prune client side.  It is compared to default scan
+ranges of 2000.
+</p>
+
+
+<div class="figure">
+<p><img src="images/scanranges.png" alt="scanranges.png" />
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Anthony Fox</p>
+<p class="date">Created: 2016-10-09 Sun 14:23</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

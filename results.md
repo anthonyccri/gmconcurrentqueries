@@ -17,7 +17,7 @@
 </li>
 <li><a href="#sec-3">3. Analysis</a>
 <ul>
-<li><a href="#sec-3-1">3.1. (1) All concurrency levels</a></li>
+<li><a href="#sec-3-1">3.1. All concurrency levels</a></li>
 <li><a href="#sec-3-2">3.2. 3x20 client JVMS and 1x4 client JVM</a></li>
 <li><a href="#sec-3-3">3.3. Minimizing the scan ranges</a></li>
 </ul>
@@ -148,7 +148,7 @@ Data consisted of 7 months of simulated ADS-B data.
 
 # Analysis<a id="sec-3" name="sec-3"></a>
 
-## (1) All concurrency levels<a id="sec-3-1" name="sec-3-1"></a>
+## All concurrency levels<a id="sec-3-1" name="sec-3-1"></a>
 
 Each plot below shows all the time in seconds for all concurrency
 levels for a given seed sorted by number of results.
